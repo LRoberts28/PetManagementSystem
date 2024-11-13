@@ -1,14 +1,16 @@
 // src/App.js
 import React from 'react';
-import PetsList from './components/PetsList'; // Import the PetsList component
-import AddPet from './components/AddPet';
+import PetsDashboard from './components/PetsDashboard';
+import AddPet from './components/addPet';
+//import './styles/global.css'; // Import global styles if any
 
 function App() {
   return (
-    <div>
-      <h1>Welcome to My React App</h1>
-      <AddPet/> {/* */}
-      <PetsList /> {/* */}
+    <div className="App">
+      <h1>Pet Management System</h1>
+      <PetsDashboard/> {/* The main dashboard that lists pets */}
+      <AddPet/> {/* Component to add a new pet */}
+      {/* Other components can be added here as needed */}
     </div>
   );
 }

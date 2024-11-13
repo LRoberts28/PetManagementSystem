@@ -33,7 +33,8 @@ db.serialize(() => {
       first_name TEXT NOT NULL,
       last_name TEXT NOT NULL,
       phone_number TEXT,
-      email TEXT
+      email TEXT NOT NULL UNIQUE, -- Ensures no two owners can have the same email
+      password TEXT NOT NULL -- Stores the hashed password for authentication
     );
   `);
 
@@ -69,8 +70,8 @@ db.serialize(() => {
   db.run(`
     INSERT INTO owners (first_name, last_name, phone_number, email)
     VALUES
-    ('John', 'Doe', '555-1234', 'john.doe@example.com'),
-    ('Jane', 'Smith', '555-5678', 'jane.smith@example.com');
+    ('John', 'Smith', '555-1234', 'john.smith@example.com'),
+    ('Audrey', 'Lancaster', '555-5678', 'audrey.lancaster@example.com');
   `);
 
   // Insert sample pets
