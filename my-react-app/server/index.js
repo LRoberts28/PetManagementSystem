@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const bcrypt = require('bcrypt'); // Import bcrypt
+const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const jwt = require('jsonwebtoken'); // Import JWT for authentication
 
 const SALT_ROUNDS = 10;
@@ -55,20 +55,36 @@ db.run(`
 app.post('/api/owners', async (req, res) => {
   const { first_name, last_name, phone_number, email, password } = req.body;
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const query = `INSERT INTO owners (first_name, last_name, phone_number, email, password) VALUES (?, ?, ?, ?, ?)`;
-    db.run(query, [first_name, last_name, phone_number, email, hashedPassword], function (err) {
-      if (err) {
-        return res.status(400).json({ error: err.message });
-      }
-      res.status(201).json({ message: 'Owner created successfully', ownerId: this.lastID });
-    });
-  } catch (error) {
-    console.error('Error hashing password:', error);
-    res.status(500).json({ error: 'Internal server error' });
+  // Validate input fields (basic check for required fields)
+  if (!first_name || !last_name || !email || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
   }
+
+  // Check if the email already exists
+  db.get('SELECT * FROM owners WHERE email = ?', [email], async (err, owner) => {
+    if (err) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    if (owner) {
+      return res.status(400).json({ error: 'Email is already taken' });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+      const query = `INSERT INTO owners (first_name, last_name, phone_number, email, password) VALUES (?, ?, ?, ?, ?)`;
+      db.run(query, [first_name, last_name, phone_number, email, hashedPassword], function (err) {
+        if (err) {
+          return res.status(400).json({ error: err.message });
+        }
+        res.status(201).json({ message: 'Owner created successfully', ownerId: this.lastID });
+      });
+    } catch (error) {
+      console.error('Error hashing password:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 });
+
 
 // Login endpoint to authenticate owner and issue JWT
 app.post('/api/login', (req, res) => {
@@ -113,9 +129,8 @@ app.post('/api/pets', authenticateToken, (req, res) => {
 });
 
 // Get all pets for the authenticated owner
-// Get pets by owner ID
-app.get('/api/owners/:ownerId/pets', (req, res) => {
-  const { ownerId } = req.params;
+app.get('/api/owners/me/pets', authenticateToken, (req, res) => {
+  const ownerId = req.ownerId;
 
   const query = `SELECT * FROM pets WHERE owner_id = ?`;
   db.all(query, [ownerId], (err, rows) => {
