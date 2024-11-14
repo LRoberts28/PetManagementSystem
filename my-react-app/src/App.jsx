@@ -1,20 +1,16 @@
-// src/App.js
 import React from 'react';
-import OwnersDashboard from './components/OwnersDashboard';
-//import PetsDashboard from './components/PetsDashboard';
-import AddPet from './components/addPet';
-//import './styles/global.css'; // Import global styles if any
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LoginSignUpForm from './pages/LoginSignUpForm';  // Import LoginSignUpForm
 
 function App() {
-  // Example ownerId for testing purposes
-  const ownerId = 1; // Replace with actual owner authentication method in production
-
   return (
-    <div className="App">
-      <h1>Pet Management System</h1>
-
-      <OwnersDashboard ownerId={ownerId} />
-    </div>
+    <Router>
+      <Routes>
+        <Route exact path="/login" element={<LoginSignUpForm/>} />
+        <Route exact path="/register" element={<LoginSignUpForm/>} />
+        {/* Other routes */}
+      </Routes>
+    </Router>
   );
 }
 
