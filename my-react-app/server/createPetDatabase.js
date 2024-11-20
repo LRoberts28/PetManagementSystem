@@ -81,7 +81,7 @@ db.serialize(() => {
   db.run(`
     INSERT INTO pets (name, breed, age, gender, weight, type, owner_id)
     VALUES
-    ('Rex', 'German Shepherd', 5, 'Male', 30.5, 'Dog', 1),
+    ('Rosco', 'Basset Hound', 5, 'Male', 30.5, 'Dog', 6),
     ('Bella', 'Siamese', 3, 'Female', 8.2, 'Cat', 2);
   `);
 

@@ -1,19 +1,6 @@
-/**
-=========================================================
-* Material Kit 2 React - v2.1.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-kit-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-import React from 'react';
-import { useState } from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // For navigation after login
+import axios from 'axios';
 
 // react-router-dom components
 import { Link } from "react-router-dom";
@@ -39,7 +26,34 @@ import routes from "../../config/routes";
 
 function SignInBasic() {
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState(''); // State for email input
+  const [password, setPassword] = useState(''); // State for password input
+  const [errorMessage, setErrorMessage] = useState(''); // State for error messages
+  const navigate = useNavigate(); // To redirect the user after login
+
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
+
+  // Function to handle form submission
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5600/api/login', { email, password });
+      const { token } = response.data;
+
+      // Save token to localStorage
+      localStorage.setItem('token', token);
+
+      // Redirect to the dashboard or home page
+      navigate('/dashboard');
+    } catch (error) {
+      // Handle errors
+      if (error.response) {
+        setErrorMessage(error.response.data.error || 'An error occurred. Please try again.');
+      } else {
+        setErrorMessage('Unable to connect to the server.');
+      }
+    }
+  };
 
   return (
     <>
@@ -110,12 +124,26 @@ function SignInBasic() {
               </MKBox>
 
               <MKBox pt={4} pb={3} px={3}>
-                <MKBox component="form" role="form">
+                <MKBox component="form" role="form" onSubmit={handleSignIn}>
                   <MKBox mb={2}>
-                    <MKInput type="email" label="Email" fullWidth />
+                    <MKInput
+                      type="email"
+                      label="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      fullWidth
+                      required
+                    />
                   </MKBox>
                   <MKBox mb={2}>
-                    <MKInput type="password" label="Password" fullWidth />
+                    <MKInput
+                      type="password"
+                      label="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      fullWidth
+                      required
+                    />
                   </MKBox>
                   <MKBox display="flex" alignItems="center" ml={-1}>
                     <Switch checked={rememberMe} onChange={handleSetRememberMe} />
@@ -129,8 +157,15 @@ function SignInBasic() {
                       &nbsp;&nbsp;Remember me
                     </MKTypography>
                   </MKBox>
+                  {errorMessage && (
+                    <MKBox mt={2}>
+                      <MKTypography variant="caption" color="error">
+                        {errorMessage}
+                      </MKTypography>
+                    </MKBox>
+                  )}
                   <MKBox mt={4} mb={1}>
-                    <MKButton variant="gradient" color="info" fullWidth>
+                    <MKButton type="submit" variant="gradient" color="info" fullWidth>
                       Sign in
                     </MKButton>
                   </MKBox>
@@ -147,7 +182,6 @@ function SignInBasic() {
                       >
                         Sign up
                       </MKTypography>
-
                     </MKTypography>
                   </MKBox>
                 </MKBox>

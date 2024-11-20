@@ -8,7 +8,7 @@ import MKTypography from '../../MKTypography';
 
 function DefaultNavbarDropdown({
   name,
-  icon,
+  icon = null, // Default value for icon
   children = false, // Default value
   collapseStatus = false, // Default value
   light = false, // Default value
@@ -17,6 +17,27 @@ function DefaultNavbarDropdown({
   collapse,
   ...rest
 }) {
+  // Default icon if no icon provided
+  const iconElement = icon ? (
+    <MKTypography
+      variant="body2"
+      lineHeight={1}
+      color="inherit"
+      sx={{ alignSelf: 'center', '& *': { verticalAlign: 'middle' } }}
+    >
+      {icon}
+    </MKTypography>
+  ) : (
+    <MKTypography
+      variant="body2"
+      lineHeight={1}
+      color="inherit"
+      sx={{ alignSelf: 'center', '& *': { verticalAlign: 'middle' } }}
+    >
+      <Icon>help_outline</Icon> {/* Fallback icon */}
+    </MKTypography>
+  );
+
   const linkComponent = {
     component: 'a',
     href,
@@ -43,14 +64,7 @@ function DefaultNavbarDropdown({
         {...(route && routeComponent)}
         {...(href && linkComponent)}
       >
-        <MKTypography
-          variant="body2"
-          lineHeight={1}
-          color="inherit"
-          sx={{ alignSelf: 'center', '& *': { verticalAlign: 'middle' } }}
-        >
-          {icon}
-        </MKTypography>
+        {iconElement}
         <MKTypography
           variant="button"
           fontWeight="regular"
@@ -78,7 +92,7 @@ function DefaultNavbarDropdown({
 // Typechecking props for the DefaultNavbarDropdown
 DefaultNavbarDropdown.propTypes = {
   name: PropTypes.string.isRequired,
-  icon: PropTypes.node.isRequired,
+  icon: PropTypes.node, // No longer required
   children: PropTypes.node,
   collapseStatus: PropTypes.bool,
   light: PropTypes.bool,
