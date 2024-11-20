@@ -68,10 +68,13 @@ db.serialize(() => {
 
   // Insert sample owners
   db.run(`
-    INSERT INTO owners (first_name, last_name, phone_number, email)
-    VALUES
-    ('John', 'Smith', '555-1234', 'john.smith@example.com'),
-    ('Audrey', 'Lancaster', '555-5678', 'audrey.lancaster@example.com');
+    INSERT INTO owners (first_name, last_name, phone_number, email, password) VALUES
+      ('John', 'Doe', '123-456-7890', 'johndoe@example.com', 'hashed_password_1'),
+      ('Jane', 'Smith', '234-567-8901', 'janesmith@example.com', 'hashed_password_2'),
+      ('Alice', 'Johnson', '345-678-9012', 'alicejohnson@example.com', 'hashed_password_3'),
+      ('Bob', 'Williams', '456-789-0123', 'bobwilliams@example.com', 'hashed_password_4'),
+      ('Charlie', 'Brown', '567-890-1234', 'charliebrown@example.com', 'hashed_password_5');
+
   `);
 
   // Insert sample pets
