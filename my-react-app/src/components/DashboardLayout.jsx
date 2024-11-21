@@ -1,18 +1,35 @@
-import React from "react";
-import { Box, Drawer, AppBar, Toolbar, IconButton, Typography, List, ListItem, ListItemText, Divider, Avatar, Menu, MenuItem } from "@mui/material";
-import { Menu as MenuIcon } from "@mui/icons-material";
-import { AccountCircle } from "@mui/icons-material"; // Corrected import
-import { Notifications } from "@mui/icons-material"; // Corrected import
-import { useState } from "react";
-
-const drawerWidth = 240;
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Box, AppBar, Toolbar, IconButton, Typography, Menu, MenuItem } from "@mui/material";
+import { AccountCircle } from "@mui/icons-material";
+import MKTypography from "./MKTypography";
 
 const DashboardLayout = ({ children }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState(null);
+  const [fullName, setFullName] = useState(null); // To store the full name
   const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  
+  useEffect(() => {
+    // Retrieve user email from localStorage
+    const storedEmail = localStorage.getItem("userEmail");
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    // Log the email retrieval to debug
+    console.log("Retrieved email from localStorage:", storedEmail);
+
+    if (storedEmail) {
+      setUserEmail(storedEmail); // Set email if exists
+      fetchUserDetails(storedEmail); // Fetch user details after email is set
+    }
+  }, []);
+
+  const fetchUserDetails = async (email) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/user?email=${email}`);
+      setFullName(`${response.data.firstName} ${response.data.lastName}`);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
   };
 
   const handleProfileMenuOpen = (event) => {
@@ -23,109 +40,36 @@ const DashboardLayout = ({ children }) => {
     setAnchorEl(null);
   };
 
-  // Sidebar menu items
-  const menuItems = [
-    { text: "Dashboard", icon: <AccountCircle /> }, // Updated icon usage
-    { text: "Pets", icon: <Notifications /> }, // Updated icon usage
-    { text: "Settings", icon: <AccountCircle /> }, // Updated icon usage
-    { text: "Logout", icon: <Notifications /> }, // Updated icon usage
-  ];
-
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#f4f6f8" }}>
-      {/* Sidebar */}
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            backgroundColor: "#333",
-            color: "#fff",
-            borderRight: "none",
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={mobileOpen}
-      >
-        <Box sx={{ padding: "20px", textAlign: "center" }}>
-          <Avatar sx={{ width: 60, height: 60, marginBottom: "10px" }} />
-          <Typography variant="h6" color="white">PetCare App</Typography>
-        </Box>
-        <Divider />
-        <List>
-            {menuItems.map((item, index) => (
-                <ListItem button key={index}> {/* Pass the button prop to ListItem, not to <li> */}
-                    {item.icon}
-                    <ListItemText primary={item.text} />
-                </ListItem>
-            ))}
-        </List>
+      {/* App Bar */}
+      <AppBar position="fixed" sx={{ backgroundColor: "#242424", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <MKTypography variant="h4" noWrap sx={{ flexGrow: 2, color: "#ffffff" }}>
+            My Dashboard
+          </MKTypography>
 
+          <IconButton color="white" onClick={handleProfileMenuOpen} sx={{ marginLeft: "10px" }}>
+            <AccountCircle />
+          </IconButton>
+          
+          {/* Profile Menu */}
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+            {/* Display Full Name or Email if Full Name is unavailable */}
+            <MenuItem>
+              <Typography variant="body2" sx={{ textAlign: "center", color: "#000000" }}>
+                {fullName ? fullName : userEmail}
+              </Typography>
+            </MenuItem>
+            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+            <MenuItem onClick={() => { /* Handle logout */ }}>Logout</MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
 
-      </Drawer>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          backgroundColor: "#f4f6f8",
-          padding: "24px",
-          marginLeft: mobileOpen ? drawerWidth : 0,
-          transition: "margin-left 0.3s ease-in-out",
-        }}
-      >
-        {/* App Bar */}
-        <AppBar
-          position="fixed"
-          sx={{
-            backgroundColor: "blueviolet",
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              sx={{ mr: 2, display: { sm: "none" } }}
-              onClick={handleDrawerToggle}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-              Dashboard
-            </Typography>
-
-            <IconButton color="inherit">
-              <Notifications />
-            </IconButton>
-
-            {/* Profile Dropdown */}
-            <IconButton
-              color="inherit"
-              onClick={handleProfileMenuOpen}
-              sx={{ marginLeft: "10px" }}
-            >
-              <AccountCircle />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-              <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
-            </Menu>
-          </Toolbar>
-        </AppBar>
-
-        {/* Content Area */}
-        <Box sx={{ paddingTop: "64px" }}>
-          {children}
-        </Box>
+      {/* Content Area */}
+      <Box sx={{ paddingTop: "64px" }}>
+        {children}
       </Box>
     </Box>
   );

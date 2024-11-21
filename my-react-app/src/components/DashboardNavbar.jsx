@@ -7,9 +7,9 @@ import Button from "../../node_modules/@mui/material/Button";
 
 const DashboardNavbar = ({ user }) => {
   return (
-    <AppBar position="static" color="primary" sx={{ marginBottom: 2 }}>
+    <AppBar position="static" color="white" sx={{ marginBottom: 2 }}>
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" sx={{ flexGrow: 1, backgroundColor: "white" }}>
           Dashboard
         </Typography>
         <Box>
@@ -18,7 +18,7 @@ const DashboardNavbar = ({ user }) => {
               Welcome, {user.first_name}!
             </Typography>
           )}
-          <Button color="inherit">Logout</Button>
+          <Button color="white">Logout</Button>
         </Box>
       </Toolbar>
     </AppBar>

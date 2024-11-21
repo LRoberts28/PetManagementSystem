@@ -42,6 +42,8 @@ function SignInBasic() {
 
       // Save token to localStorage
       localStorage.setItem('token', token);
+      localStorage.setItem("userEmail", email);
+      //localStorage.setItem("userFullName", fullName);
 
       // Redirect to the dashboard or home page
       navigate('/dashboard');

@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Box, Grid, Card, CardContent, Typography, Button, TextField } from "@mui/material";
-import MKBox from "../../components/MKBox";
-import MKTypography from "../../components/MKTypography";
+import { Box, Grid, Card, CardContent, Typography, TextField, Button } from "@mui/material";
 import MKButton from "../../components/MKButton";
-import DefaultNavbar from "../../components/Navbars/DefaultNavbar";
 import DashboardLayout from "../../components/DashboardLayout";
 import DashboardNavbar from "../../components/DashboardNavbar";
 
@@ -20,11 +17,13 @@ const Dashboard = () => {
     weight: "",
     type: "",
   });
+  const [editPet, setEditPet] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch user details and pets
-  useEffect(() => {
+  // Fetch pet data and owner details
+  const fetchPets = () => {
     const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
 
     if (!token) {
       navigate("/dashboard");
@@ -44,6 +43,11 @@ const Dashboard = () => {
           navigate("/dashboard");
         }
       });
+  };
+
+  // Initial pet data fetch
+  useEffect(() => {
+    fetchPets();
   }, [navigate]);
 
   // Handle form submission to add a new pet
@@ -54,7 +58,7 @@ const Dashboard = () => {
     axios
       .post("/api/pets", newPet, { headers: { Authorization: token } })
       .then((response) => {
-        setPets((prevPets) => [...prevPets, response.data]);
+        fetchPets();
         setNewPet({
           name: "",
           breed: "",
@@ -69,29 +73,51 @@ const Dashboard = () => {
       });
   };
 
+  // Handle form submission to update a pet
+  const handleUpdatePet = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    axios
+      .put(`/api/pets/${editPet.id}`, editPet, { headers: { Authorization: token } })
+      .then((response) => {
+        fetchPets();
+        setEditPet(null); // Close the edit form after updating
+      })
+      .catch((error) => {
+        console.error("Error updating pet:", error);
+      });
+  };
+
+  // Handle form field change (for both new and edit forms)
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    if (editPet) {
+      setEditPet((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setNewPet((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // Handle deleting a pet
+  const handleDeletePet = (petId) => {
+    const token = localStorage.getItem("token");
+
+    axios
+      .delete(`/api/pets/${petId}`, { headers: { Authorization: token } })
+      .then((response) => {
+        fetchPets(); // Reload pet data after deletion
+      })
+      .catch((error) => {
+        console.error("Error deleting pet:", error);
+      });
+  };
+
   return (
     <DashboardLayout>
-      <DashboardNavbar />
-      <Box sx={{ padding: 3, backgroundColor: "#f5f5f5" }}>
+      <Box sx={{ padding: 3, backgroundColor: "#ffffff" }}>
         {/* Welcome Banner */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 3,
-            backgroundColor: "#00796b",
-            padding: "15px",
-            borderRadius: 1,
-          }}
-        >
-          <Typography variant="h2" fontWeight="" color="white">
-            Welcome to Your Dashboard
-          </Typography>
-          <Typography variant="h6" color="white">
-            {owner ? `Logged in as: ${owner.email}` : "Loading..."}
-          </Typography>
-        </Box>
+        
 
         {/* Pet List Section */}
         <Grid container spacing={3}>
@@ -100,24 +126,55 @@ const Dashboard = () => {
               <Grid item xs={12} sm={6} md={4} key={pet.id}>
                 <Card sx={{ backgroundColor: "#ffffff", boxShadow: 2, borderRadius: 2 }}>
                   <CardContent>
-                    <Typography variant="h5" fontWeight="bold" color="primary">
+                    <Typography variant="h3" fontWeight="bold" color="black">
                       {pet.name}
                     </Typography>
-                    <Typography variant="body1" color="textSecondary">
+                    <Typography variant="body1" color="black">
                       <strong>Breed:</strong> {pet.breed}
                     </Typography>
-                    <Typography variant="body1" color="textSecondary">
+                    <Typography variant="body1" color="black">
                       <strong>Age:</strong> {pet.age} years
                     </Typography>
-                    <Typography variant="body1" color="textSecondary">
+                    <Typography variant="body1" color="black">
                       <strong>Gender:</strong> {pet.gender}
                     </Typography>
-                    <Typography variant="body1" color="textSecondary">
+                    <Typography variant="body1" color="black">
                       <strong>Weight:</strong> {pet.weight} kg
                     </Typography>
-                    <Typography variant="body1" color="textSecondary">
+                    <Typography variant="body1" color="black">
                       <strong>Type:</strong> {pet.type}
                     </Typography>
+
+                    {/* Edit and Delete Buttons */}
+                    <Button
+                      onClick={() => setEditPet(pet)}
+                      variant="contained"
+                      sx={{
+                        marginTop: 1,
+                        backgroundColor: "black",
+                        color: "#ffffff",
+                        "&:hover": {
+                          backgroundColor: "#333333",
+                        },
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={() => handleDeletePet(pet.id)}
+                      variant="contained"
+                      sx={{
+                        marginTop: 1,
+                        marginLeft: 0,
+                        backgroundColor: "black",
+                        color: "#ffffff",
+                        "&:hover": {
+                          backgroundColor: "#333333",
+                        },
+                      }}
+                    >
+                      Delete
+                    </Button>
                   </CardContent>
                 </Card>
               </Grid>
@@ -134,27 +191,28 @@ const Dashboard = () => {
         {/* Add Pet Form Section */}
         <Box
           component="form"
-          onSubmit={handleAddPet}
+          onSubmit={editPet ? handleUpdatePet : handleAddPet}
           sx={{
             marginTop: 4,
             padding: 4,
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0)",
             borderRadius: 2,
-            backgroundColor: "white",
+            backgroundColor: "black",
             maxWidth: "600px",
             marginLeft: "auto",
             marginRight: "auto",
           }}
         >
-          <Typography variant="h5" marginBottom={2} color="primary">
-            Add a New Pet
+          <Typography variant="h5" marginBottom={2} color="black">
+            {editPet ? "Edit Pet" : "Add a New Pet"}
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Name"
-                value={newPet.name}
-                onChange={(e) => setNewPet({ ...newPet, name: e.target.value })}
+                name="name"
+                value={editPet ? editPet.name : newPet.name}
+                onChange={handleFieldChange}
                 fullWidth
                 required
                 variant="outlined"
@@ -164,8 +222,9 @@ const Dashboard = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Breed"
-                value={newPet.breed}
-                onChange={(e) => setNewPet({ ...newPet, breed: e.target.value })}
+                name="breed"
+                value={editPet ? editPet.breed : newPet.breed}
+                onChange={handleFieldChange}
                 fullWidth
                 required
                 variant="outlined"
@@ -176,8 +235,9 @@ const Dashboard = () => {
               <TextField
                 label="Age"
                 type="number"
-                value={newPet.age}
-                onChange={(e) => setNewPet({ ...newPet, age: e.target.value })}
+                name="age"
+                value={editPet ? editPet.age : newPet.age}
+                onChange={handleFieldChange}
                 fullWidth
                 required
                 variant="outlined"
@@ -187,8 +247,9 @@ const Dashboard = () => {
             <Grid item xs={12} sm={4}>
               <TextField
                 label="Gender"
-                value={newPet.gender}
-                onChange={(e) => setNewPet({ ...newPet, gender: e.target.value })}
+                name="gender"
+                value={editPet ? editPet.gender : newPet.gender}
+                onChange={handleFieldChange}
                 fullWidth
                 required
                 variant="outlined"
@@ -199,8 +260,9 @@ const Dashboard = () => {
               <TextField
                 label="Weight (kg)"
                 type="number"
-                value={newPet.weight}
-                onChange={(e) => setNewPet({ ...newPet, weight: e.target.value })}
+                name="weight"
+                value={editPet ? editPet.weight : newPet.weight}
+                onChange={handleFieldChange}
                 fullWidth
                 required
                 variant="outlined"
@@ -209,24 +271,33 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Type (e.g., Dog, Cat)"
-                value={newPet.type}
-                onChange={(e) => setNewPet({ ...newPet, type: e.target.value })}
+                label="Type"
+                name="type"
+                value={editPet ? editPet.type : newPet.type}
+                onChange={handleFieldChange}
                 fullWidth
                 required
                 variant="outlined"
                 sx={{ marginBottom: 2 }}
               />
             </Grid>
+            <Grid item xs={12}>
+              <MKButton
+                type="submit"
+                variant="gradient"
+                color="dark"
+                fullWidth
+                sx={{
+                  padding: "16px",
+                  marginTop: 2,
+                  backgroundColor: "white",
+                  color: "black",
+                }}
+              >
+                {editPet ? "Update Pet" : "Add Pet"}
+              </MKButton>
+            </Grid>
           </Grid>
-          <MKButton
-            type="submit"
-            variant="contained"
-            color="success"
-            sx={{ marginTop: 2, width: "100%" }}
-          >
-            Add Pet
-          </MKButton>
         </Box>
       </Box>
     </DashboardLayout>
