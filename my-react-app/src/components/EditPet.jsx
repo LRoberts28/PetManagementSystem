@@ -4,7 +4,7 @@ import axios from "axios";
 import { Box, Grid, TextField, Typography } from "@mui/material";
 import MKButton from "../components/MKButton";
 import DashboardLayout from "../components/DashboardLayout";
-import DashboardNavbar from "../components/DashboardNavbar";
+//import DashboardNavbar from "../../components/DashboardNavbar";
 
 const EditPet = () => {
   const [editPet, setEditPet] = useState(null);

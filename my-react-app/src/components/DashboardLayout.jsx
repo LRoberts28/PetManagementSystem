@@ -25,7 +25,7 @@ const DashboardLayout = ({ children }) => {
 
   const fetchUserDetails = async (email) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/user?email=${email}`);
+      const response = await axios.get(`http://localhost:5600/api/user?email=${email}`);
       setFullName(`${response.data.firstName} ${response.data.lastName}`);
     } catch (error) {
       console.error('Error fetching user data:', error);

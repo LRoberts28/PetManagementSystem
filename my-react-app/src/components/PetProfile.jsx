@@ -1,21 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import {
-  Box,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
+import { Box, Typography, Grid, Card, CardContent, Button, List, ListItem, ListItemText } from "@mui/material";
 import DashboardLayout from "../components/DashboardLayout";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
@@ -25,57 +11,39 @@ import MKBox from "./MKBox";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const PetProfile = () => {
-  const { petId } = useParams();
+  const { petId } = useParams(); // Get the pet ID from the URL params
   const [pet, setPet] = useState(null);
   const [appointments, setAppointments] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    breed: "",
-    age: "",
-    gender: "",
-    weight: "",
-    type: "",
-  });
-  const [appointmentForm, setAppointmentForm] = useState({
-    date: "",
-    type: "",
-    reason: "",
-    weight: "",
-  });
-  const [editAppointment, setEditAppointment] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch pet details by ID
   const fetchPetDetails = () => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/dashboard");
       return;
     }
+
     axios
       .get(`/api/pets/${petId}`, { headers: { Authorization: token } })
       .then((response) => {
         setPet(response.data);
-        setFormData({
-          name: response.data.name,
-          breed: response.data.breed,
-          age: response.data.age,
-          gender: response.data.gender,
-          weight: response.data.weight,
-          type: response.data.type,
-        });
       })
       .catch((error) => {
         console.error("Error fetching pet details:", error);
       });
   };
 
+  // Fetch appointments by pet ID
   const fetchAppointments = () => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/dashboard");
       return;
     }
+
     axios
       .get(`/api/pets/${petId}/appointments`, { headers: { Authorization: token } })
       .then((response) => {
@@ -86,108 +54,21 @@ const PetProfile = () => {
       });
   };
 
+  // Fetch pet details and appointments on component mount
   useEffect(() => {
     fetchPetDetails();
     fetchAppointments();
   }, [petId]);
 
-  const handleFieldChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAppointmentFieldChange = (e) => {
-    setAppointmentForm({
-      ...appointmentForm,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleUpdatePet = (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/dashboard");
-      return;
-    }
-    axios
-      .put(`/api/pets/${petId}`, formData, { headers: { Authorization: token } })
-      .then((response) => {
-        window.location.reload();
-      })
-      .catch((error) => {
-        console.error("Error updating pet:", error);
-      });
-  };
-
-  const handleAppointmentSubmit = (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/dashboard");
-      return;
-    }
-
-    const appointmentData = {
-      date: appointmentForm.date,
-      type: appointmentForm.type,
-      reason: appointmentForm.reason,
-      weight: appointmentForm.weight,
-    };
-
-    // If editing an existing appointment, we update it
-    if (editAppointment) {
-      axios
-        .put(`/api/pets/${petId}/appointments/${editAppointment.id}`, appointmentData, { headers: { Authorization: token } })
-        .then((response) => {
-          setOpenDialog(false);
-          setEditAppointment(null); // Reset edit state
-          fetchAppointments(); // Refresh appointments list
-        })
-        .catch((error) => {
-          console.error("Error updating appointment:", error);
-        });
-    } else {
-      // If creating a new appointment
-      axios
-        .post(`/api/pets/${petId}/appointments`, appointmentData, { headers: { Authorization: token } })
-        .then((response) => {
-          setOpenDialog(false);
-          fetchAppointments(); // Refresh appointments list
-        })
-        .catch((error) => {
-          console.error("Error creating appointment:", error);
-        });
-    }
-  };
-
-  const handleDeleteAppointment = (appointmentId) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/dashboard");
-      return;
-    }
-
-    axios
-      .delete(`/api/pets/${petId}/appointments/${appointmentId}`, { headers: { Authorization: token } })
-      .then((response) => {
-        fetchAppointments(); // Refresh appointments list after delete
-      })
-      .catch((error) => {
-        console.error("Error deleting appointment:", error);
-      });
-  };
-
   if (!pet) return <Typography>Loading...</Typography>;
 
+  // Data for the chart (e.g., weight over time)
   const chartData = {
-    labels: appointments.map((appt) => new Date(appt.date).toLocaleDateString()),
+    labels: appointments.map((appt) => new Date(appt.date).toLocaleDateString()), // Convert date to readable format
     datasets: [
       {
         label: "Pet Weight Over Time",
-        data: appointments.map((appt) => appt.weight),
+        data: appointments.map((appt) => appt.weight), // Weight data from appointments
         fill: false,
         borderColor: "rgba(75,192,192,1)",
         tension: 0.1,
@@ -202,7 +83,9 @@ const PetProfile = () => {
           {pet.name}'s Profile
         </Typography>
         <Grid container spacing={3}>
+          {/* Row 1: Pet Profile and Appointments Side by Side */}
           <Grid container item xs={12} spacing={3}>
+            {/* Pet Profile */}
             <Grid item xs={12} sm={6}>
               <Card sx={{ backgroundColor: "#ffffff", boxShadow: 3, borderRadius: 2 }}>
                 <CardContent>
@@ -242,6 +125,7 @@ const PetProfile = () => {
               </Card>
             </Grid>
 
+            {/* Appointments */}
             <Grid item xs={12} sm={6}>
               <Card sx={{ backgroundColor: "#ffffff", boxShadow: 3, borderRadius: 2 }}>
                 <CardContent>
@@ -258,7 +142,7 @@ const PetProfile = () => {
                         <Button
                           variant="outlined"
                           color="error"
-                          onClick={() => handleDeleteAppointment(appointment.id)}
+                          onClick={() => console.log("Delete appointment", appointment.id)}
                         >
                           Delete
                         </Button>
@@ -276,7 +160,6 @@ const PetProfile = () => {
                         color: "black",
                       },
                     }}
-                    onClick={() => setOpenDialog(true)}
                   >
                     Add Appointment
                   </Button>
@@ -285,73 +168,18 @@ const PetProfile = () => {
             </Grid>
           </Grid>
 
+          {/* Row 2: Weight Over Time Graph */}
           <Grid item xs={12}>
             <Card sx={{ backgroundColor: "#ffffff", boxShadow: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography variant="h6" fontWeight="bold" color="black" gutterBottom>
-                  Weight History Chart
+                <Typography variant="h6" color="black" fontWeight="bold" gutterBottom>
+                  Weight Over Time
                 </Typography>
-                <Line data={chartData} options={{ responsive: true }} />
+                <Line data={chartData} />
               </CardContent>
             </Card>
           </Grid>
         </Grid>
-
-        {/* Appointment Dialog */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-          <DialogTitle>{editAppointment ? "Edit Appointment" : "Add Appointment"}</DialogTitle>
-          <DialogContent>
-            <form onSubmit={handleAppointmentSubmit}>
-              <Box sx={{ marginBottom: 2 }}>
-                <input
-                  type="date"
-                  name="date"
-                  value={appointmentForm.date}
-                  onChange={handleAppointmentFieldChange}
-                  required
-                />
-              </Box>
-              <Box sx={{ marginBottom: 2 }}>
-                <input
-                  type="text"
-                  name="type"
-                  placeholder="Appointment Type"
-                  value={appointmentForm.type}
-                  onChange={handleAppointmentFieldChange}
-                  required
-                />
-              </Box>
-              <Box sx={{ marginBottom: 2 }}>
-                <input
-                  type="text"
-                  name="reason"
-                  placeholder="Reason"
-                  value={appointmentForm.reason}
-                  onChange={handleAppointmentFieldChange}
-                  required
-                />
-              </Box>
-              <Box sx={{ marginBottom: 2 }}>
-                <input
-                  type="number"
-                  name="weight"
-                  placeholder="Weight"
-                  value={appointmentForm.weight}
-                  onChange={handleAppointmentFieldChange}
-                  required
-                />
-              </Box>
-              <DialogActions>
-                <Button onClick={() => setOpenDialog(false)} color="primary">
-                  Cancel
-                </Button>
-                <Button type="submit" color="primary">
-                  Save
-                </Button>
-              </DialogActions>
-            </form>
-          </DialogContent>
-        </Dialog>
       </MKBox>
     </DashboardLayout>
   );

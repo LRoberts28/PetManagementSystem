@@ -117,16 +117,23 @@ function authenticateToken(req, res, next) {
 // Add a new pet (owner must be authenticated)
 app.post('/api/pets', authenticateToken, (req, res) => {
   const { name, breed, age, gender, weight, type } = req.body;
-  const ownerId = req.ownerId;
+  const ownerId = req.ownerId;  // Get the authenticated owner ID from the token
+
+  // Check if all required fields are provided
+  if (!name || !breed || !age || !gender || !weight || !type) {
+    return res.status(400).json({ error: 'All pet fields are required' });
+  }
 
   const query = `INSERT INTO pets (name, breed, age, gender, weight, type, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
   db.run(query, [name, breed, age, gender, weight, type, ownerId], function (err) {
     if (err) {
-      return res.status(400).json({ error: err.message });
+      console.error('Error inserting pet:', err.message);
+      return res.status(400).json({ error: 'Failed to add pet' });
     }
     res.status(201).json({ message: 'Pet added successfully', petId: this.lastID });
   });
 });
+
 
 // Get all pets for the authenticated owner
 app.get('/api/owners/me/pets', authenticateToken, (req, res) => {
@@ -187,20 +194,20 @@ app.delete('/api/pets/:id', authenticateToken, (req, res) => {
 
 app.get('/api/user', (req, res) => {
   const { email } = req.query;
-  // Fetch user by email from the database
-  // Respond with user data or an error if not found
-  User.findOne({ email: email })
-    .then(user => {
-      if (user) {
-        res.json({ fullName: `${user.firstName} ${user.lastName}` });
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
-    })
-    .catch(err => {
-      res.status(500).json({ message: 'Server error', error: err });
-    });
+
+  // Fetch user by email from the database using SQLite query
+  db.get('SELECT * FROM owners WHERE email = ?', [email], (err, owner) => {
+    if (err) {
+      return res.status(500).json({ message: 'Server error', error: err });
+    }
+    if (!owner) {
+      return res.status(404).json({ message: 'Owner not found' });
+    }
+    // Return the full name of the owner
+    res.json({ fullName: `${owner.first_name} ${owner.last_name}` });
+  });
 });
+
 
 
 // Start the server
