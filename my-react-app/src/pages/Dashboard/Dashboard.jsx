@@ -54,11 +54,19 @@ const Dashboard = () => {
   const handleAddPet = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-
+  
+    if (!token) {
+      console.error("Authorization token is missing");
+      return;
+    }
+  
+    console.log("Adding new pet:", newPet); // Log the new pet data
+  
     axios
       .post("/api/pets", newPet, { headers: { Authorization: token } })
       .then((response) => {
-        fetchPets();
+        console.log("Pet added successfully:", response); // Log successful response
+        fetchPets(); // Fetch updated pet list
         setNewPet({
           name: "",
           breed: "",
@@ -72,6 +80,7 @@ const Dashboard = () => {
         console.error("Error adding pet:", error);
       });
   };
+  
 
   // Handle form submission to update a pet
   const handleUpdatePet = (e) => {
@@ -117,7 +126,6 @@ const Dashboard = () => {
     <DashboardLayout>
       <Box sx={{ padding: 3, backgroundColor: "#ffffff" }}>
         {/* Welcome Banner */}
-        
 
         {/* Pet List Section */}
         <Grid container spacing={3}>
@@ -145,12 +153,28 @@ const Dashboard = () => {
                       <strong>Type:</strong> {pet.type}
                     </Typography>
 
-                    {/* Edit and Delete Buttons */}
+                    {/* Edit, Delete, and View Profile Buttons */}
+                    <Button
+                      onClick={() => navigate(`/pet/${pet.id}`)}
+                      variant="contained"
+                      sx={{
+                        marginTop: 1,
+                        marginLeft: 1,
+                        backgroundColor: "black",
+                        color: "#ffffff",
+                        "&:hover": {
+                          backgroundColor: "#333333",
+                        },
+                      }}
+                    >
+                      View Profile
+                    </Button>
                     <Button
                       onClick={() => setEditPet(pet)}
                       variant="contained"
                       sx={{
                         marginTop: 1,
+                        marginLeft: 1,
                         backgroundColor: "black",
                         color: "#ffffff",
                         "&:hover": {
@@ -165,7 +189,7 @@ const Dashboard = () => {
                       variant="contained"
                       sx={{
                         marginTop: 1,
-                        marginLeft: 0,
+                        marginLeft: 1,
                         backgroundColor: "black",
                         color: "#ffffff",
                         "&:hover": {
@@ -207,6 +231,7 @@ const Dashboard = () => {
             {editPet ? "Edit Pet" : "Add a New Pet"}
           </Typography>
           <Grid container spacing={2}>
+            {/* Input Fields for Pet Info */}
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Name"
@@ -281,6 +306,7 @@ const Dashboard = () => {
                 sx={{ marginBottom: 2 }}
               />
             </Grid>
+
             <Grid item xs={12}>
               <MKButton
                 type="submit"

@@ -9,6 +9,8 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from './assets/theme/index.jsx';  // Make sure this is the correct path to your theme
 import ContactUs from './pages/ContactUs/contactUs.jsx';
 import OwnersDashboard from './components/OwnersDashboard.jsx';
+import PetProfile from './components/PetProfile.jsx';
+import EditPet from './components/EditPet.jsx';
 
 function App() {
   return (
@@ -18,8 +20,10 @@ function App() {
           <Route exact path='/signIn' element={<SignInBasic />} />
           <Route exact path="/signUp" element={<SignUpBasic />} />
           <Route exact path="/dashboard" element={<Dashboard />} />
+          <Route path="/pets/:petId" element={<PetProfile />} />
           <Route exact path="/login" element={<LoginSignUpForm />} />
           <Route exact path="/register" element={<LoginSignUpForm />} />
+          <Route path="/edit-pet/:petId" element={<EditPet />} />
           <Route exact path="/contactUs" element={<ContactUs/>} />
           <Route exact path="/ownerDashboard" element={<OwnersDashboard/>} />
         </Routes>
