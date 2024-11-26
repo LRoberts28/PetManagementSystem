@@ -11,6 +11,7 @@ import ContactUs from './pages/ContactUs/contactUs.jsx';
 import OwnersDashboard from './components/OwnersDashboard.jsx';
 import PetProfile from './components/PetProfile.jsx';
 import EditPet from './components/EditPet.jsx';
+import AppointmentsPage from './pages/AppointmentsPage/AppointmentsPage.jsx';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route exact path="/signUp" element={<SignUpBasic />} />
           <Route exact path="/dashboard" element={<Dashboard />} />
           <Route path="/pets/:petId" element={<PetProfile />} />
+          <Route path="/pets/:petId/appointments" element={<AppointmentsPage />} />
           <Route exact path="/login" element={<LoginSignUpForm />} />
           <Route exact path="/register" element={<LoginSignUpForm />} />
           <Route path="/edit-pet/:petId" element={<EditPet />} />

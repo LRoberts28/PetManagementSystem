@@ -208,6 +208,63 @@ app.get('/api/user', (req, res) => {
   });
 });
 
+app.post('/api/pets/:petId/appointments', authenticateToken, (req, res) => {
+  const { petId } = req.params;
+  const { date, type, reason, weight } = req.body;
+  const ownerId = req.ownerId; // Verify ownership
+
+  // Ensure pet belongs to the authenticated owner
+  db.get('SELECT * FROM pets WHERE id = ? AND owner_id = ?', [petId, ownerId], (err, pet) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!pet) return res.status(403).json({ error: 'Access denied or pet not found' });
+
+      // Add appointment
+      const query = `INSERT INTO appointments (pet_id, date, type, reason, weight) VALUES (?, ?, ?, ?, ?)`;
+      db.run(query, [petId, date, type, reason, weight], function (err) {
+          if (err) return res.status(400).json({ error: err.message });
+          res.status(201).json({ message: 'Appointment added successfully', appointmentId: this.lastID });
+      });
+  });
+});
+
+app.get('/api/pets/:petId/appointments', authenticateToken, (req, res) => {
+  const { petId } = req.params;
+  const ownerId = req.ownerId;
+
+  // Verify ownership
+  db.get('SELECT * FROM pets WHERE id = ? AND owner_id = ?', [petId, ownerId], (err, pet) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!pet) return res.status(403).json({ error: 'Access denied or pet not found' });
+
+      // Fetch appointments
+      db.all('SELECT * FROM appointments WHERE pet_id = ?', [petId], (err, rows) => {
+          if (err) return res.status(400).json({ error: err.message });
+          res.json(rows);
+      });
+  });
+});
+
+
+app.delete('/api/appointments/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const ownerId = req.ownerId;
+
+  // Check ownership before deleting
+  db.get(`
+      SELECT a.id FROM appointments a 
+      JOIN pets p ON a.pet_id = p.id 
+      WHERE a.id = ? AND p.owner_id = ?`, [id, ownerId], (err, appointment) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!appointment) return res.status(403).json({ error: 'Access denied or appointment not found' });
+
+      db.run('DELETE FROM appointments WHERE id = ?', [id], function (err) {
+          if (err) return res.status(400).json({ error: err.message });
+          res.json({ message: 'Appointment deleted successfully' });
+      });
+  });
+});
+
+
 
 
 // Start the server
