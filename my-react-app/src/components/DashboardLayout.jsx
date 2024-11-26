@@ -49,12 +49,12 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#f4f6f8" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#ffffff" }}>
       {/* App Bar */}
       <AppBar position="fixed" sx={{ backgroundColor: "#242424", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <MKTypography variant="h4" noWrap sx={{ flexGrow: 2, color: "#ffffff" }}>
-            My Dashboard
+          <MKTypography variant="h3" noWrap sx={{ flexGrow: 2, color: "#ffffff" }}>
+            TailTracker Dashboard
           </MKTypography>
 
           <IconButton color="white" onClick={handleProfileMenuOpen} sx={{ marginLeft: "10px" }}>

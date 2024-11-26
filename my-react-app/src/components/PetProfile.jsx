@@ -68,22 +68,57 @@ const PetProfile = () => {
     datasets: [
       {
         label: "Pet Weight Over Time",
-        data: appointments.map((appt) => appt.weight), // Weight data from appointments
+        data: appointments.map((appt) => appt.weight || 0), // Replace null with 0 or a fallback value
         fill: false,
         borderColor: "rgba(75,192,192,1)",
         tension: 0.1,
       },
     ],
   };
+  
 
   const handleAddAppointment = () => {
     navigate(`/pets/${petId}/appointments`);
   };
 
+  const handleDeleteAppointment = (appointmentId) => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      alert("You are not logged in. Please log in to continue.");
+      return;
+    }
+  
+    // Confirm deletion
+    if (window.confirm("Are you sure you want to delete this appointment?")) {
+      axios
+        .delete(`/api/pets/${petId}/appointments/${appointmentId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(() => {
+          // Filter out the deleted appointment from the state
+          const updatedAppointments = appointments.filter(
+            (appt) => appt.id !== appointmentId
+          );
+          setAppointments(updatedAppointments);
+          alert("Appointment deleted successfully.");
+        })
+        .catch((error) => {
+          console.error("Error deleting appointment:", error);
+          if (error.response && error.response.status === 404) {
+            alert("Appointment not found or already deleted.");
+          } else {
+            alert("Failed to delete the appointment. Please try again.");
+          }
+        });
+    }
+  };
+  
+
   return (
     <DashboardLayout>
       <MKBox sx={{ padding: 10, backgroundColor: "#f7f7f7" }}>
-        <Typography variant="h2" fontWeight="bold" color="black" textAlign="center" gutterBottom>
+        <Typography variant="h1" fontWeight="bold" color="black" textAlign="center" gutterBottom>
           {pet.name}'s Profile
         </Typography>
         <Grid container spacing={3}>
@@ -93,7 +128,7 @@ const PetProfile = () => {
             <Grid item xs={12} sm={6}>
               <Card sx={{ backgroundColor: "#ffffff", boxShadow: 3, borderRadius: 2 }}>
                 <CardContent>
-                  <Typography variant="h4" color="black" fontWeight="bold">
+                  <Typography variant="h3" color="black" fontWeight="bold">
                     {pet.name}
                   </Typography>
                   <Typography variant="body1" color="black">
@@ -111,20 +146,6 @@ const PetProfile = () => {
                   <Typography variant="body1" color="black">
                     <strong>Type:</strong> {pet.type}
                   </Typography>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      marginTop: 2,
-                      backgroundColor: "black",
-                      color: "#ffffff",
-                      "&:hover": {
-                        backgroundColor: "transparent",
-                        color: "black",
-                      },
-                    }}
-                  >
-                    Edit Pet
-                  </Button>
                 </CardContent>
               </Card>
             </Grid>
@@ -141,9 +162,8 @@ const PetProfile = () => {
                       <ListItem key={appointment.id} sx={{ borderBottom: "1px solid #eee" }}>
                         <ListItemText
                           primary={`Date: ${new Date(appointment.date).toLocaleDateString()} | Type: ${appointment.type}`}
-                          secondary={`Reason: ${appointment.reason} | Weight: ${appointment.weight} kg`}
+                          secondary={`Reason: ${appointment.reason} | Weight: ${appointment.weight || "N/A"} kg`}
                         />
-
                         <Button
                         variant="contained"
                         sx={{
@@ -155,33 +175,10 @@ const PetProfile = () => {
                             color: "black",
                             },
                         }}
-                        onClick={() => {
-                            const token = localStorage.getItem("token");
-                            if (!token) {
-                            alert("You are not logged in. Please log in to continue.");
-                            return;
-                            }
-
-                            if (window.confirm("Are you sure you want to delete this appointment?")) {
-                            axios
-                                .delete(`/api/pets/${petId}/appointments/${appointment.id}`, {
-                                headers: { Authorization: token },
-                                })
-                                .then(() => {
-                                // Refresh the appointments list
-                                const updatedAppointments = appointments.filter((appt) => appt.id !== appointment.id);
-                                setAppointments(updatedAppointments);
-                                })
-                                .catch((error) => {
-                                console.error("Error deleting appointment:", error);
-                                alert("Failed to delete the appointment. Please try again.");
-                                });
-                            }
-                        }}
+                        onClick={() => handleDeleteAppointment(appointment.id)} // Pass the appointment ID
                         >
-                        Delete
+                          Delete
                         </Button>
-
                       </ListItem>
                     ))}
                   </List>
@@ -198,7 +195,7 @@ const PetProfile = () => {
                     }}
                     onClick={handleAddAppointment} // Add redirect logic here
                   >
-                    Add Appointment
+                    View/Add Appointments
                   </Button>
                 </CardContent>
               </Card>
