@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Box, AppBar, Toolbar, IconButton, Typography, Menu, MenuItem } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
@@ -22,6 +23,13 @@ const DashboardLayout = ({ children }) => {
       fetchUserDetails(storedEmail); // Fetch user details after email is set
     }
   }, []);
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear(); // Clear all stored data
+    navigate("/signIn"); // Redirect to SignIn page
+  };
 
   const fetchUserDetails = async (email) => {
     try {
@@ -57,12 +65,12 @@ const DashboardLayout = ({ children }) => {
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
             {/* Display Full Name or Email if Full Name is unavailable */}
             <MenuItem>
-              <Typography variant="body2" sx={{ textAlign: "center", color: "#000000" }}>
-                {fullName ? fullName : userEmail}
+              <Typography variant="body2" sx={{ color: "#000000", marginBottom: "4px" }}>
+                {userEmail}
               </Typography>
             </MenuItem>
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={() => { /* Handle logout */ }}>Logout</MenuItem>
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

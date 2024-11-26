@@ -76,10 +76,14 @@ const PetProfile = () => {
     ],
   };
 
+  const handleAddAppointment = () => {
+    navigate(`/pets/${petId}/appointments`);
+  };
+
   return (
     <DashboardLayout>
       <MKBox sx={{ padding: 10, backgroundColor: "#f7f7f7" }}>
-        <Typography variant="h3" fontWeight="bold" color="black" textAlign="center" gutterBottom>
+        <Typography variant="h2" fontWeight="bold" color="black" textAlign="center" gutterBottom>
           {pet.name}'s Profile
         </Typography>
         <Grid container spacing={3}>
@@ -89,7 +93,7 @@ const PetProfile = () => {
             <Grid item xs={12} sm={6}>
               <Card sx={{ backgroundColor: "#ffffff", boxShadow: 3, borderRadius: 2 }}>
                 <CardContent>
-                  <Typography variant="h5" color="black" fontWeight="bold">
+                  <Typography variant="h4" color="black" fontWeight="bold">
                     {pet.name}
                   </Typography>
                   <Typography variant="body1" color="black">
@@ -114,7 +118,7 @@ const PetProfile = () => {
                       backgroundColor: "black",
                       color: "#ffffff",
                       "&:hover": {
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "transparent",
                         color: "black",
                       },
                     }}
@@ -139,13 +143,45 @@ const PetProfile = () => {
                           primary={`Date: ${new Date(appointment.date).toLocaleDateString()} | Type: ${appointment.type}`}
                           secondary={`Reason: ${appointment.reason} | Weight: ${appointment.weight} kg`}
                         />
+
                         <Button
-                          variant="outlined"
-                          color="error"
-                          onClick={() => console.log("Delete appointment", appointment.id)}
+                        variant="contained"
+                        sx={{
+                            marginTop: 0,
+                            backgroundColor: "black",
+                            color: "#ffffff",
+                            "&:hover": {
+                            backgroundColor: "transparent",
+                            color: "black",
+                            },
+                        }}
+                        onClick={() => {
+                            const token = localStorage.getItem("token");
+                            if (!token) {
+                            alert("You are not logged in. Please log in to continue.");
+                            return;
+                            }
+
+                            if (window.confirm("Are you sure you want to delete this appointment?")) {
+                            axios
+                                .delete(`/api/pets/${petId}/appointments/${appointment.id}`, {
+                                headers: { Authorization: token },
+                                })
+                                .then(() => {
+                                // Refresh the appointments list
+                                const updatedAppointments = appointments.filter((appt) => appt.id !== appointment.id);
+                                setAppointments(updatedAppointments);
+                                })
+                                .catch((error) => {
+                                console.error("Error deleting appointment:", error);
+                                alert("Failed to delete the appointment. Please try again.");
+                                });
+                            }
+                        }}
                         >
-                          Delete
+                        Delete
                         </Button>
+
                       </ListItem>
                     ))}
                   </List>
@@ -156,10 +192,11 @@ const PetProfile = () => {
                       backgroundColor: "black",
                       color: "#ffffff",
                       "&:hover": {
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "transparent",
                         color: "black",
                       },
                     }}
+                    onClick={handleAddAppointment} // Add redirect logic here
                   >
                     Add Appointment
                   </Button>

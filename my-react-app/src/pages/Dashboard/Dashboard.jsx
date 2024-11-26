@@ -155,7 +155,7 @@ const Dashboard = () => {
 
                     {/* Edit, Delete, and View Profile Buttons */}
                     <Button
-                      onClick={() => navigate(`/pet/${pet.id}`)}
+                      onClick={() => navigate(`/pets/${pet.id}`)}
                       variant="contained"
                       sx={{
                         marginTop: 1,
