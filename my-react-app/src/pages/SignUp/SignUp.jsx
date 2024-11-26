@@ -82,8 +82,8 @@ function SignUpBasic() {
               mb={1}
               textAlign="center"
             >
-              <MKTypography variant="h4" fontWeight="medium" color="white" mt={1}>
-                Sign up
+              <MKTypography variant="h2" fontWeight="medium" color="white" mt={1}>
+                Tailtracker
               </MKTypography>
             </MKBox>
 
