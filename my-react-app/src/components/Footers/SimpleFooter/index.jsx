@@ -42,7 +42,7 @@ function SimpleFooter({ company = { href: "https://www.creative-tim.com/", name:
           justifyContent="center"
           alignItems="center"
           flexWrap="wrap"
-          color={light ? "white" : "text"}
+          color={light ? "black" : "text"}
           fontSize={size.sm}
         >
           &copy; {new Date().getFullYear()}, made by Lance Roberts for TailTracker.
@@ -52,8 +52,8 @@ function SimpleFooter({ company = { href: "https://www.creative-tim.com/", name:
           sx={({ breakpoints }) => ({
             display: "flex",
             flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: "left",
+            justifyContent: "left",
             listStyle: "none",
             mt: 3,
             mb: 0,

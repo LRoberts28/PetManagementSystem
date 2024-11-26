@@ -192,34 +192,7 @@ const AppointmentsPage = () => {
                                 color: "black",
                                 },
                             }}
-                            onClick={() => {
-                                const token = localStorage.getItem("token");
-                                if (!token) {
-                                alert("You are not logged in. Please log in to continue.");
-                                return;
-                                }
-
-                                if (window.confirm("Are you sure you want to delete this appointment?")) {
-                                axios
-                                    .delete(`/api/pets/${petId}/appointments/${appointment.id}`, {
-                                    headers: { Authorization: `Bearer ${token}` },
-                                    })
-                                    .then(() => {
-                                    // Refresh the appointments list
-                                    const updatedAppointments = appointments.filter((appt) => appt.id !== appointment.id);
-                                    setAppointments(updatedAppointments);
-                                    alert("Appointment deleted successfully.");
-                                    })
-                                    .catch((error) => {
-                                    console.error("Error deleting appointment:", error);
-                                    if (error.response && error.response.status === 404) {
-                                        alert("Appointment not found or already deleted.");
-                                    } else {
-                                        alert("Failed to delete the appointment. Please try again.");
-                                    }
-                                    });
-                                }
-                            }}
+                            onClick={handleDeleteAppointment}
                             >
                             Delete
                             </Button>
