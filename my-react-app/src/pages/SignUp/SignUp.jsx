@@ -11,7 +11,7 @@ import MKButton from "../../components/MKButton";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 
-import bgImage from "../../assets/bg-sign-in-basic.jpeg";
+import bgImage from "../../assets/pawsBackground.jpg";
 
 function SignUpBasic() {
   const [formData, setFormData] = useState({
@@ -46,7 +46,7 @@ function SignUpBasic() {
       }
 
       // Redirect to login page on success
-      navigate("/authentication/sign-in/basic");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     }
@@ -161,6 +161,7 @@ function SignUpBasic() {
           </Card>
         </Grid>
       </Grid>
+      
     </MKBox>
   );
 }

@@ -227,6 +227,35 @@ app.post('/api/pets/:petId/appointments', authenticateToken, (req, res) => {
   });
 });
 
+// Example endpoint to handle adding an appointment
+app.post("/api/pets/:petId/appointments", authenticateToken, (req, res) => {
+  const { date, type, reason, weight } = req.body; // Ensure weight is extracted from the request body
+
+  if (!date || !type || !reason) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  // Store the appointment, ensuring that weight is included if provided
+  const appointment = new Appointment({
+    petId: req.params.petId,
+    date,
+    type,
+    reason,
+    weight: weight || null, // Set weight to null if not provided
+  });
+
+  appointment
+    .save()  // Save to the database (ensure weight is included in your schema)
+    .then((newAppointment) => {
+      res.status(201).json(newAppointment);
+    })
+    .catch((error) => {
+      console.error("Error saving appointment:", error);
+      res.status(500).json({ error: "Failed to save appointment" });
+    });
+});
+
+
 app.get('/api/pets/:petId/appointments', authenticateToken, (req, res) => {
   const { petId } = req.params;
   const ownerId = req.ownerId;
@@ -244,8 +273,7 @@ app.get('/api/pets/:petId/appointments', authenticateToken, (req, res) => {
   });
 });
 
-
-app.delete('/api/appointments/:id', authenticateToken, (req, res) => {
+app.delete('/api/pets/:petId/appointments/:appointmentId', authenticateToken, (req, res) => {
   const { id } = req.params;
   const ownerId = req.ownerId;
 

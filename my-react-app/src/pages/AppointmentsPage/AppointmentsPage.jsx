@@ -67,7 +67,7 @@ const AppointmentsPage = () => {
   const handleAddAppointment = () => {
     const token = localStorage.getItem("token");
 
-    if (appointmentForm.type && appointmentForm.date && appointmentForm.reason) {
+    if (appointmentForm.type && appointmentForm.date && appointmentForm.reason && appointmentForm.weight) {
       axios
         .post(
           `/api/pets/${petId}/appointments`,
@@ -75,12 +75,13 @@ const AppointmentsPage = () => {
             type: appointmentForm.type,
             date: appointmentForm.date,
             reason: appointmentForm.reason,
+            weight: appointmentForm.weight,
           },
           { headers: { Authorization: token } }
         )
         .then(() => {
           fetchAppointments(); // Refresh appointments
-          setAppointmentForm({ type: "", date: "", reason: "" }); // Clear the form
+          setAppointmentForm({ type: "", date: "", reason: "" , weight: ""}); // Clear the form
         })
         .catch((error) => console.error("Error adding appointment:", error));
     } else {
@@ -91,12 +92,26 @@ const AppointmentsPage = () => {
   // Delete appointment
   const handleDeleteAppointment = (id) => {
     const token = localStorage.getItem("token");
-
+  
+    if (!token) {
+      alert("You are not logged in. Please log in to delete an appointment.");
+      return;
+    }
+  
     axios
-      .delete(`/api/pets/${petId}/appointments/${id}`, { headers: { Authorization: token } })
-      .then(() => fetchAppointments()) // Refresh appointments
-      .catch((error) => console.error("Error deleting appointment:", error));
+      .delete(`/api/pets/${petId}/appointments/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(() => {
+        // Update state to remove deleted appointment
+        setAppointments((prevAppointments) => prevAppointments.filter((appt) => appt.id !== id));
+        alert("Appointment deleted successfully.");
+      })
+      .catch((error) => {
+        console.error("Error deleting appointment:", error);
+        alert("Failed to delete appointment. Please try again.");
+      });
   };
+  
+  
 
   // Fetch data on mount
   useEffect(() => {
@@ -108,7 +123,7 @@ const AppointmentsPage = () => {
 
   return (
     <DashboardLayout>
-      <MKBox sx={{ padding: 10, backgroundColor: "#f7f7f7" }}>
+      <MKBox sx={{ padding: 10, backgroundColor: "#ffffff" }}>
         <Typography variant="h2" fontWeight="bold" color="black" textAlign="center" gutterBottom>
           {pet.name}'s Appointments
         </Typography>
@@ -143,26 +158,75 @@ const AppointmentsPage = () => {
                 {appointments.length > 0 ? (
                   <List>
                     {appointments.map((appointment) => (
-                      <ListItem key={appointment.id} sx={{ borderBottom: "1px solid #eee" }}>
-                        <ListItemText
-                          primary={`Date: ${new Date(appointment.date).toLocaleDateString()} | Type: ${appointment.type}`}
-                          secondary={`Reason: ${appointment.reason}`}
-                        />
+                      <ListItem
+                      key={appointment.id}
+                      sx={{ borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between" }}
+                    >
+                      <ListItemText
+                        primary={`Date: ${new Date(appointment.date).toLocaleDateString()} | Type: ${appointment.type}`}
+                        secondary={`Reason: ${appointment.reason}`}
+                      />
+                      <Box>
                         <Button
-                            variant="contained"
-                            sx={{
-                            marginTop: 0,
+                          variant="contained"
+                          sx={{
+                            marginRight: 1,
                             backgroundColor: "black",
                             color: "#ffffff",
                             "&:hover": {
-                                backgroundColor: "black",
-                                color: "black",
+                              backgroundColor: "transparent",
+                              color: "black",
                             },
-                            }}
+                          }}
                         >
-                            Edit Pet
+                          Edit
                         </Button>
-                      </ListItem>
+                        <Button
+                            variant="contained"
+                            sx={{
+                                marginTop: 0,
+                                backgroundColor: "black",
+                                color: "#ffffff",
+                                "&:hover": {
+                                backgroundColor: "transparent",
+                                color: "black",
+                                },
+                            }}
+                            onClick={() => {
+                                const token = localStorage.getItem("token");
+                                if (!token) {
+                                alert("You are not logged in. Please log in to continue.");
+                                return;
+                                }
+
+                                if (window.confirm("Are you sure you want to delete this appointment?")) {
+                                axios
+                                    .delete(`/api/pets/${petId}/appointments/${appointment.id}`, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                    })
+                                    .then(() => {
+                                    // Refresh the appointments list
+                                    const updatedAppointments = appointments.filter((appt) => appt.id !== appointment.id);
+                                    setAppointments(updatedAppointments);
+                                    alert("Appointment deleted successfully.");
+                                    })
+                                    .catch((error) => {
+                                    console.error("Error deleting appointment:", error);
+                                    if (error.response && error.response.status === 404) {
+                                        alert("Appointment not found or already deleted.");
+                                    } else {
+                                        alert("Failed to delete the appointment. Please try again.");
+                                    }
+                                    });
+                                }
+                            }}
+                            >
+                            Delete
+                            </Button>
+
+                      </Box>
+                    </ListItem>
+                    
                     ))}
                   </List>
                 ) : (
@@ -170,7 +234,7 @@ const AppointmentsPage = () => {
                 )}
 
                 {/* Add Appointment Form */}
-                <Box sx={{ marginTop: 3 }}>
+                <Box sx={{ marginTop: 2 }}>
                   <Typography variant="h6" fontWeight="bold" color="black">
                     Add New Appointment
                   </Typography>
@@ -183,7 +247,7 @@ const AppointmentsPage = () => {
                     sx={{ marginBottom: 2 }}
                   />
                   <TextField
-                    label="Date"
+                    label=""
                     name="date"
                     type="date"
                     value={appointmentForm.date}
@@ -199,6 +263,14 @@ const AppointmentsPage = () => {
                     fullWidth
                     sx={{ marginBottom: 2 }}
                   />
+                  <TextField
+                    label="Weight"
+                    name="weight"
+                    value={appointmentForm.weight}
+                    onChange={handleInputChange}
+                    fullWidth
+                    sx={{ marginBottom: 2 }}
+                  />
                   <Button
                     variant="contained"
                     sx={{
@@ -206,7 +278,7 @@ const AppointmentsPage = () => {
                       backgroundColor: "black",
                       color: "#ffffff",
                       "&:hover": {
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "transparent",
                         color: "black",
                       },
                     }}

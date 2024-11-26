@@ -21,7 +21,7 @@ import DefaultNavbar from "../../components/Navbars/DefaultNavbar";
 import SimpleFooter from "../../components/Footers/SimpleFooter";
 
 // Images
-import bgImage from "../../assets/bg-sign-in-basic.jpeg";
+import bgImage from "../../assets/pawsBackground.jpg";
 import routes from "../../config/routes";
 
 function SignInBasic() {
@@ -84,14 +84,10 @@ function SignInBasic() {
         width="100%"
         minHeight="100vh"
         sx={{
-          backgroundImage: ({ functions: { linearGradient, rgba }, palette: { gradients } }) =>
-            `${linearGradient(
-              rgba(gradients.dark.main, 0.6),
-              rgba(gradients.dark.state, 0.6)
-            )}, url(${bgImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          backgroundImage: `url(${bgImage})`, // Add the background image
+          backgroundSize: "100% auto",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       />
       

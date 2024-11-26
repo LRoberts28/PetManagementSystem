@@ -43,12 +43,14 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS appointments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       pet_id INTEGER,
-      date TEXT,
-      time TEXT,
-      description TEXT,
-      FOREIGN KEY(pet_id) REFERENCES pets(id)
+      date TEXT NOT NULL,
+      type TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      weight DECIMAL(5,2) DEFAULT NULL,
+      FOREIGN KEY (pet_id) REFERENCES pets(id)
     );
   `);
+  
 
   // Create pet types table (for categorizing pets, like Dog, Cat, etc.)
   db.run(`
@@ -83,14 +85,6 @@ db.serialize(() => {
     VALUES
     ('Rosco', 'Basset Hound', 5, 'Male', 30.5, 'Dog', 6),
     ('Bella', 'Siamese', 3, 'Female', 8.2, 'Cat', 2);
-  `);
-
-  // Insert sample appointments
-  db.run(`
-    INSERT INTO appointments (pet_id, date, time, description)
-    VALUES
-    (1, '2024-11-10', '10:00', 'Annual checkup'),
-    (2, '2024-11-12', '14:30', 'Vaccination');
   `);
 
   console.log('Tables and sample data created successfully');
