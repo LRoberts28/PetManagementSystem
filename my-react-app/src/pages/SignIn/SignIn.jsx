@@ -41,6 +41,7 @@ function SignInBasic() {
       const { token } = response.data;
 
       // Save token to localStorage
+      console.log(token);
       localStorage.setItem('token', token);
       localStorage.setItem("userEmail", email);
       //localStorage.setItem("userFullName", fullName);

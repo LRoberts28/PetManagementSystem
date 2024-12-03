@@ -9,7 +9,12 @@ const SALT_ROUNDS = 10;
 const SECRET_KEY = 'your_secret_key'; // Replace with a secure secret key
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allow Authorization header
+}));
+
 app.use(express.json());
 
 // Database setup
@@ -56,7 +61,7 @@ app.post('/api/owners', async (req, res) => {
   const { first_name, last_name, phone_number, email, password } = req.body;
 
   // Validate input fields (basic check for required fields)
-  if (!first_name || !last_name || !email || !password) {
+  if (!first_name || !last_name || !phone_number || !email || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
@@ -104,15 +109,36 @@ app.post('/api/login', (req, res) => {
 
 // Middleware to authenticate and get the owner's ID from the JWT
 function authenticateToken(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'Access denied, token missing!' });
+  const authHeader = req.headers['authorization'];
+  
+  // Log the Authorization header for debugging
+  console.log('Authorization Header:', authHeader);
+  
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Access denied, token missing!' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied, token missing!' });
+  }
 
   jwt.verify(token, SECRET_KEY, (err, owner) => {
-    if (err) return res.status(403).json({ error: 'Invalid token' });
-    req.ownerId = owner.id; // Assign ownerId to request for CRUD operations
+    if (err) {
+      console.error('JWT verification failed:', err);
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    req.ownerId = owner.id;
     next();
   });
 }
+
+
+
+app.get('/api/test', (req, res) => {
+  res.send('API is working!');
+});
+
 
 // Add a new pet (owner must be authenticated)
 app.post('/api/pets', authenticateToken, (req, res) => {
