@@ -20,18 +20,20 @@ const Dashboard = () => {
   const [editPet, setEditPet] = useState(null);
   const navigate = useNavigate();
 
+  //console.log("Token:", token);
+
+
   // Fetch pet data and owner details
   const fetchPets = () => {
     const token = localStorage.getItem("token");
-    const email = localStorage.getItem("email");
-
+    console.log("Token fetched:", token);
     if (!token) {
-      navigate("/dashboard");
+      navigate("/login");  // Redirect if no token is available
       return;
     }
 
     axios
-      .get("/api/owners/me/pets", { headers: { Authorization: token } })
+      .get("/api/owners/me/pets", { headers: { 'Authorization': `Bearer ${token}` } })
       .then((response) => {
         setPets(response.data.data);
         const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT
@@ -40,7 +42,7 @@ const Dashboard = () => {
       .catch((error) => {
         console.error("Error fetching pets:", error);
         if (error.response && error.response.status === 401) {
-          navigate("/dashboard");
+          navigate("/login");  // Redirect to login if unauthorized
         }
       });
   };
@@ -48,24 +50,24 @@ const Dashboard = () => {
   // Initial pet data fetch
   useEffect(() => {
     fetchPets();
-  }, [navigate]);
+  }, []);
 
   // Handle form submission to add a new pet
   const handleAddPet = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-  
+
     if (!token) {
       console.error("Authorization token is missing");
       return;
     }
-  
-    console.log("Adding new pet:", newPet); // Log the new pet data
-  
+
+    console.log("Adding new pet:", newPet);
+
     axios
-      .post("/api/pets", newPet, { headers: { Authorization: token } })
+      .post("/api/pets", newPet, { headers: { 'Authorization': `Bearer ${token}` } })
       .then((response) => {
-        console.log("Pet added successfully:", response); // Log successful response
+        console.log("Pet added successfully:", response);
         fetchPets(); // Fetch updated pet list
         setNewPet({
           name: "",
@@ -80,15 +82,19 @@ const Dashboard = () => {
         console.error("Error adding pet:", error);
       });
   };
-  
 
   // Handle form submission to update a pet
   const handleUpdatePet = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
+    if (!token) {
+      console.error("Authorization token is missing");
+      return;
+    }
+
     axios
-      .put(`/api/pets/${editPet.id}`, editPet, { headers: { Authorization: token } })
+      .put(`/api/pets/${editPet.id}`, editPet, { headers: { 'Authorization': `Bearer ${token}` } })
       .then((response) => {
         fetchPets();
         setEditPet(null); // Close the edit form after updating
@@ -113,7 +119,7 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
 
     axios
-      .delete(`/api/pets/${petId}`, { headers: { Authorization: token } })
+      .delete(`/api/pets/${petId}`, { headers: { 'Authorization': `Bearer ${token}` } })
       .then((response) => {
         fetchPets(); // Reload pet data after deletion
       })
