@@ -151,7 +151,7 @@ function SignUpBasic() {
                 <MKButton
                   variant="text"
                   color="info"
-                  onClick={() => navigate("/signIn")}
+                  onClick={() => navigate("/")}
                 >
                   Sign In
                 </MKButton>

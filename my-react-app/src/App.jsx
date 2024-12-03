@@ -18,7 +18,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
-          <Route exact path='/signIn' element={<SignInBasic />} />
+          <Route exact path='' element={<SignInBasic />} />
           <Route exact path="/signUp" element={<SignUpBasic />} />
           <Route exact path="/dashboard" element={<Dashboard />} />
           <Route path="/pets/:petId" element={<PetProfile />} />
